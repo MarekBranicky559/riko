@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Riko</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Riko">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#212121">
+<style>
+:root{--bg:#212121;--side:#171717;--panel:#2f2f2f;--line:#3a3a3a;--text:#ececf1;--muted:#9a9aa0;--accent:#10a37f;--user:#3e3e42;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#ffffff;--side:#f4f4f5;--panel:#f1f1f3;--line:#e2e2e6;--text:#1c1c1e;--muted:#6b6b72;--user:#e6e6ea;color-scheme:light}}
+:root[data-theme="light"]{--bg:#ffffff;--side:#f4f4f5;--panel:#f1f1f3;--line:#e2e2e6;--text:#1c1c1e;--muted:#6b6b72;--user:#e6e6ea;color-scheme:light}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);overflow:hidden}
+.app{display:flex;height:100%}
+.side{width:250px;background:var(--side);border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:19px}
+.brand svg{color:var(--accent)}
+.btn{display:flex;align-items:center;gap:8px;width:100%;padding:11px 12px;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:14px;cursor:pointer}
+.btn:hover{background:var(--panel)}
+.ver{margin-top:auto;font-size:12px;color:var(--muted);text-align:center}
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{height:58px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--line)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+header h3{font-size:15px}
+.st{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+#menu{display:none;margin-left:auto}
+#chat{flex:1;overflow-y:auto;padding:12px 0}
+.msg{padding:14px max(16px,calc((100% - 760px)/2));display:flex}
+.msg.user{justify-content:flex-end}
+.bubble{line-height:1.6;font-size:16px;white-space:pre-wrap;word-break:break-word;max-width:100%}
+.user .bubble{background:var(--user);padding:10px 16px;border-radius:18px;max-width:75%}
+.ai{background:var(--panel)}
+.err{color:#ff6a6a}
+.dots{display:flex;gap:5px;padding:8px 0}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--muted);animation:b 1.4s infinite both}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes b{0%,100%{opacity:.2}20%{opacity:1}}
+.bar{padding:8px max(16px,calc((100% - 760px)/2)) 14px}
+.box{display:flex;align-items:flex-end;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 10px}
+textarea{flex:1;background:transparent;border:none;outline:none;resize:none;color:var(--text);font-size:16px;max-height:160px;padding:6px 4px;line-height:1.4}
+textarea::placeholder{color:var(--muted)}
+.ic{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
+.ic:hover{color:var(--accent)}
+.ic:disabled{opacity:.4;cursor:default}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+#hist{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;margin:0 -4px}
+.h{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text)}
+.h:hover,.h.on{background:var(--panel)}
+.h span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h button{opacity:0;border:none;background:none;color:var(--muted);cursor:pointer;padding:2px}
+.h:hover button{opacity:1}
+.lbl{font-size:12px;color:var(--muted);padding:2px 6px}
+.img{margin-top:4px}
+.img img{display:block;max-width:100%;width:420px;border-radius:12px;background:#fff;border:1px solid var(--line)}
+.img .btn{width:auto;margin-top:8px;padding:7px 12px;font-size:13px}
+.on-mode{color:var(--accent)!important;background:var(--bg)}
+@media (max-width:768px){#menu{display:grid}.side{display:none}.user .bubble{max-width:88%}}
+html,body{overscroll-behavior:none}
+.img .btn{text-decoration:none;display:inline-flex}
+a.btn{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#10a37f"/><path d="M32 11v8" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><circle cx="32" cy="10" r="3.5" fill="#fff"/><rect x="12" y="19" width="40" height="32" rx="11" fill="#fff"/><circle cx="24" cy="34" r="4.5" fill="#10a37f"/><circle cx="40" cy="34" r="4.5" fill="#10a37f"/><path d="M24 43q8 6 16 0" stroke="#10a37f" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+      RIKO OS
+    </div>
+    <button class="btn" id="newBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nový čet
+    </button>
+    <div class="lbl">História</div><div id="hist"></div>
+    <button class="btn" id="themeBtn">Zmeniť vzhľad</button>
+    <button class="btn" id="srvBtn">Adresa servera</button>
+    <div class="ver">Verzia 3.0</div>
+  </aside>
+  <main>
+    <header>
+      <svg width="36" height="36" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#10a37f"/><rect x="14" y="20" width="36" height="28" rx="10" fill="#fff"/><circle cx="25" cy="33" r="4" fill="#10a37f"/><circle cx="39" cy="33" r="4" fill="#10a37f"/><path d="M32 12v8" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>
+      <div><h3>Riko</h3><span class="st"><span class="dot"></span>Online</span></div>
+      <button class="ic" id="menu" title="Nový čet" aria-label="Nový čet">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </header>
+    <div id="chat"></div>
+    <div class="bar">
+      <div class="box">
+        <button class="ic" id="imgBtn" title="Vytvoriť obrázok" aria-label="Vytvoriť obrázok">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </button>
+        <textarea id="inp" rows="1" placeholder="Opýtaj sa Rika na čokoľvek…"></textarea>
+        <button class="ic" id="send" title="Odoslať" aria-label="Odoslať">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+        </button>
+      </div>
+      <p class="note">Ikona obrázka prepne na tvorbu obrázkov (Nano Banana).</p>
+    </div>
+  </main>
+</div>
+<script>
+const chat=document.getElementById("chat"),inp=document.getElementById("inp"),sendBtn=document.getElementById("send"),imgBtn=document.getElementById("imgBtn"),histEl=document.getElementById("hist");
+let convs=[],cur=null,busy=false,imgMode=false;
+const WELCOME="Ahoj Marek! Volám sa Riko. O čom budeme dnes písať? Cez ikonu obrázka ti vytvorím aj obrázok.";
+function server(ask){let u=localStorage.getItem("riko_server")||"";if(!u||ask){u=prompt("Vlož adresu svojho Cloudflare Workera (napr. https://riko.meno.workers.dev):",u)||u;if(u){u=u.trim().replace(/\/+$/,"");localStorage.setItem("riko_server",u);}}return u;}
+function load(){try{convs=JSON.parse(localStorage.getItem("riko_convs")||"[]");}catch(e){convs=[];}}
+function save(){let c=convs.slice(0,40);for(let k=0;k<50;k++){try{localStorage.setItem("riko_convs",JSON.stringify(c));return;}catch(e){let done=false;for(let i=c.length-1;i>=0&&!done;i--)c[i].msgs.forEach(m=>{if(m.img&&!done){delete m.img;m.content+=" (obrázok odstránený kvôli miestu)";done=true;}});if(!done){c.pop();if(!c.length)return;}}}}
+async function api(path,payload){const s=server();if(!s)throw{message:"Chýba adresa servera."};const r=await fetch(s+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});let d;try{d=await r.json();}catch(e){throw{message:"Server vrátil neplatnú odpoveď ("+r.status+")."};}if(d.error)throw{message:d.error};return d;}
+function renderImg(parent,url){const w=document.createElement("div");w.className="img";const im=document.createElement("img");im.alt="Vygenerovaný obrázok";im.src=url;const a=document.createElement("a");a.className="btn";a.textContent="Stiahnuť obrázok";a.href=url;a.download="riko-obrazok.png";w.append(im,a);parent.appendChild(w);}
+function add(role,text,img){const m=document.createElement("div");m.className="msg "+role;const b=document.createElement("div");b.className="bubble";b.textContent=text||"";if(img)renderImg(b,img);m.appendChild(b);chat.appendChild(m);chat.scrollTop=chat.scrollHeight;return b;}
+function renderHist(){histEl.innerHTML="";convs.forEach(c=>{const r=document.createElement("div");r.className="h"+(cur&&c.id===cur.id?" on":"");const t=document.createElement("span");t.textContent=c.title;const x=document.createElement("button");x.textContent="✕";x.title="Zmazať";x.onclick=e=>{e.stopPropagation();convs=convs.filter(k=>k.id!==c.id);save();if(cur&&cur.id===c.id)newChat();else renderHist();};r.onclick=()=>openConv(c.id);r.append(t,x);histEl.appendChild(r);});}
+function show(){chat.innerHTML="";add("ai",WELCOME);if(cur)cur.msgs.forEach(m=>add(m.role==="user"?"user":"ai",m.content,m.img));}
+function newChat(){busy=false;sendBtn.disabled=false;cur=null;show();renderHist();}
+function openConv(id){busy=false;sendBtn.disabled=false;cur=convs.find(c=>c.id===id)||null;show();renderHist();}
+async function send(){
+ const text=inp.value.trim();if(!text||busy)return;
+ if(!server())return;
+ if(!cur){cur={id:Date.now().toString(36),title:text.slice(0,40),msgs:[]};convs.unshift(cur);}
+ busy=true;sendBtn.disabled=true;inp.value="";inp.style.height="auto";
+ const asImg=imgMode;add("user",text);
+ cur.msgs.push({role:"user",content:asImg?"🎨 "+text:text});save();renderHist();
+ const out=add("ai","");out.innerHTML='<div class="dots"><i></i><i></i><i></i></div>';
+ try{
+  if(asImg){const d=await api("/image",{prompt:text});const url="data:"+(d.mime||"image/png")+";base64,"+d.image;out.textContent="Tu je tvoj obrázok:";renderImg(out,url);cur.msgs.push({role:"assistant",content:"Tu je tvoj obrázok:",img:url});}
+  else{const hist=cur.msgs.filter(m=>!m.img&&!m.content.startsWith("🎨 ")).map(m=>({role:m.role,content:m.content}));const d=await api("/chat",{messages:hist});out.textContent=d.text;cur.msgs.push({role:"assistant",content:d.text});}
+  save();
+ }catch(e){cur.msgs.pop();save();out.classList.add("err");out.textContent="Chyba: "+((e&&e.message)||"niečo sa pokazilo");}
+ busy=false;sendBtn.disabled=false;inp.focus();chat.scrollTop=chat.scrollHeight;
+}
+inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
+inp.addEventListener("input",()=>{inp.style.height="auto";inp.style.height=Math.min(inp.scrollHeight,160)+"px";});
+sendBtn.addEventListener("click",send);
+imgBtn.addEventListener("click",()=>{imgMode=!imgMode;imgBtn.classList.toggle("on-mode",imgMode);inp.placeholder=imgMode?"Opíš obrázok, ktorý mám vytvoriť…":"Opýtaj sa Rika na čokoľvek…";});
+document.getElementById("newBtn").addEventListener("click",newChat);
+document.getElementById("menu").addEventListener("click",newChat);
+document.getElementById("srvBtn").addEventListener("click",()=>server(true));
+document.getElementById("themeBtn").addEventListener("click",()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=dark?"light":"dark";});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+load();newChat();
+</script>
+</body>
+</html>
